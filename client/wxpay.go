@@ -13,8 +13,11 @@ import (
 	"sort"
 	"strings"
 	"time"
+)
 
-	"lx-api/util"
+const (
+	// WechatUnifiedOrder 微信统一下订单接口
+	WechatUnifiedOrder = "https://api.mch.weixin.qq.com/pay/unifiedorder"
 )
 
 // WechatClient struct
@@ -100,11 +103,11 @@ func (wechat *WechatClient) Pay(charge *Charge) (string, error) {
 	unifyOrder.AppID = charge.AppID
 	unifyOrder.Body = charge.Body
 	unifyOrder.MchID = charge.MchID
-	unifyOrder.NonceStr = util.RandomStr()
-	unifyOrder.NotifyURL = util.WX_NOTIFY_URL
+	unifyOrder.NonceStr = RandomStr()
+	unifyOrder.NotifyURL = charge.NotifyURL
 	unifyOrder.OpenID = charge.OpenID
 	unifyOrder.OutTradeNo = charge.OutTradeNo
-	unifyOrder.SpbillCreateIP = util.LocalIP()
+	unifyOrder.SpbillCreateIP = LocalIP()
 	unifyOrder.TotalFee = fmt.Sprintf("%d", int(charge.TotalFee*100))
 	unifyOrder.TradeType = charge.TradeType
 
@@ -127,7 +130,7 @@ func (wechat *WechatClient) Pay(charge *Charge) (string, error) {
 
 	xmlStr := []byte(ret)
 	//发送unified order请求.
-	req, err := http.NewRequest("POST", util.WX_UNIFIED_ORDER, bytes.NewReader(xmlStr))
+	req, err := http.NewRequest("POST", WechatUnifiedOrder, bytes.NewReader(xmlStr))
 
 	if err != nil {
 		return "New Http Request发生错误，原因:", err
@@ -163,7 +166,7 @@ func (wechat *WechatClient) Pay(charge *Charge) (string, error) {
 	if charge.TradeType == "JSAPI" {
 		c["appId"] = xmlRe.AppID
 		c["timeStamp"] = fmt.Sprintf("%d", time.Now().Unix())
-		c["nonceStr"] = util.RandomStr()
+		c["nonceStr"] = RandomStr()
 		c["package"] = fmt.Sprintf("prepay_id=%s", xmlRe.PrepayID)
 		c["signType"] = "MD5"
 		c["paySign"] = wechat.GenerateSign(c, charge.Key)
@@ -174,7 +177,7 @@ func (wechat *WechatClient) Pay(charge *Charge) (string, error) {
 		c["partnerid"] = xmlRe.MchID
 		c["prepayid"] = xmlRe.PrepayID
 		c["package"] = "Sign=WXPay"
-		c["noncestr"] = util.RandomStr()
+		c["noncestr"] = RandomStr()
 		c["timestamp"] = fmt.Sprintf("%d", time.Now().Unix())
 		c["sign"] = wechat.GenerateSign(c, charge.Key)
 	}
