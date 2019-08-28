@@ -52,6 +52,7 @@ type UnifyOrderResponse struct {
 	NonceStr   string `xml:"nonce_str"`
 	Sign       string `xml:"sign"`
 	ResultCode string `xml:"result_code"`
+	ErrorCode  string `xml:"err_code"`
 	PrepayID   string `xml:"prepay_id"`
 	TradeType  string `xml:"trade_type"`
 }
@@ -158,7 +159,7 @@ func (wechat *WechatClient) Pay(charge *Charge) (string, error) {
 	}
 
 	if xmlRe.ResultCode != "SUCCESS" {
-		return "支付失败，原因：", errors.New(xmlRe.ReturnMsg)
+		return "支付失败，原因：", errors.New(xmlRe.ErrorCode)
 	}
 
 	var c = make(map[string]string)
