@@ -129,6 +129,9 @@ func (wechat *WechatClient) Pay(charge *Charge) (string, error) {
 
 	ret := strings.Replace(string(code), "UnifyOrderRequest", "xml", -1)
 
+	// 打印请求数据，用以错误跟踪
+	fmt.Println(ret)
+
 	xmlStr := []byte(ret)
 	//发送unified order请求.
 	req, err := http.NewRequest("POST", WechatUnifiedOrder, bytes.NewReader(xmlStr))
